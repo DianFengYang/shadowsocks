@@ -25,7 +25,7 @@ import logging
 import json
 import collections
 
-from shadowsocks import common, eventloop, tcprelay, udprelay, asyncdns, shell
+import common, eventloop, tcprelay, udprelay, asyncdns, shell, multiuser
 
 
 BUF_SIZE = 1506
@@ -76,6 +76,8 @@ class Manager(object):
             a_config['server_port'] = int(port)
             a_config['password'] = password
             self.add_port(a_config)
+        self._mu = multiuser.MultiUser()
+        self.ports_to_remove = []
 
     def add_port(self, config):
         port = int(config['server_port'])
@@ -148,6 +150,7 @@ class Manager(object):
 
     def stat_callback(self, port, data_len):
         self._statistics[port] += data_len
+        self._mu.stat_cache(port, data_len)
 
     def handle_periodic(self):
         r = {}
@@ -171,6 +174,8 @@ class Manager(object):
         if len(r) > 0:
             send_data(r)
         self._statistics.clear()
+        self.ports_to_remove = self._mu.stat_process()
+        print('ports to remove:', self.ports_to_remove)
 
     def _send_control_data(self, data):
         if self._control_client_addr:
@@ -198,13 +203,13 @@ def test():
     import time
     import threading
     import struct
-    from shadowsocks import encrypt
+    import encrypt
 
     logging.basicConfig(level=5,
                         format='%(asctime)s %(levelname)-8s %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
     enc = []
-    eventloop.TIMEOUT_PRECISION = 1
+    eventloop.TIMEOUT_PRECISION = 10
 
     def run_server():
         config = {
@@ -247,7 +252,7 @@ def test():
     logging.info('add and remove test passed')
 
     # test statistics for TCP
-    header = common.pack_addr(b'google.com') + struct.pack('>H', 80)
+    header = common.pack_addr(b'bcy.net') + struct.pack('>H', 80)
     data = encrypt.encrypt_all(b'asdfadsfasdf', 'aes-256-cfb', 1,
                                header + b'GET /\r\n\r\n')
     tcp_cli = socket.socket()
@@ -262,6 +267,7 @@ def test():
     data = data.split('stat:')[1]
     stats = shell.parse_json_in_str(data)
     assert '7001' in stats
+    print(stats)
     logging.info('TCP statistics test passed')
 
     # test statistics for UDP
