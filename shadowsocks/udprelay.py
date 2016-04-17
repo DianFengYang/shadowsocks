@@ -68,8 +68,8 @@ import struct
 import errno
 import random
 
-from shadowsocks import encrypt, eventloop, lru_cache, common, shell
-from shadowsocks.common import parse_header, pack_addr, onetimeauth_verify, \
+import encrypt, eventloop, lru_cache, common, shell
+from common import parse_header, pack_addr, onetimeauth_verify, \
     onetimeauth_gen, ONETIMEAUTH_BYTES, ADDRTYPE_AUTH
 
 
@@ -155,7 +155,7 @@ class UDPRelay(object):
         if not data:
             logging.debug('UDP handle_server: data is empty')
         if self._stat_callback:
-            self._stat_callback(self._listen_port, len(data))
+            self._stat_callback(self._listen_port, len(data), 'd')
         if self._is_local:
             frag = common.ord(data[2])
             if frag != 0:
@@ -236,6 +236,8 @@ class UDPRelay(object):
             return
         try:
             client.sendto(data, (server_addr, server_port))
+            if self._stat_callback:
+                self._stat_callback(self._listen_port, len(data), 'u')
         except IOError as e:
             err = eventloop.errno_from_exception(e)
             if err in (errno.EINPROGRESS, errno.EAGAIN):
@@ -249,7 +251,7 @@ class UDPRelay(object):
             logging.debug('UDP handle_client: data is empty')
             return
         if self._stat_callback:
-            self._stat_callback(self._listen_port, len(data))
+            self._stat_callback(self._listen_port, len(data), 'd')
         if not self._is_local:
             addrlen = len(r_addr[0])
             if addrlen > 255:
@@ -273,6 +275,8 @@ class UDPRelay(object):
         client_addr = self._client_fd_to_server_addr.get(sock.fileno())
         if client_addr:
             self._server_socket.sendto(response, client_addr)
+            if self._stat_callback:
+                self._stat_callback(self._listen_port, len(response), 'u')
         else:
             # this packet is from somewhere else we know
             # simply drop that packet

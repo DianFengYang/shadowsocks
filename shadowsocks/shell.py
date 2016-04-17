@@ -23,13 +23,15 @@ import json
 import sys
 import getopt
 import logging
-from shadowsocks.common import to_bytes, to_str, IPNetwork
-from shadowsocks import encrypt
+from common import to_bytes, to_str, IPNetwork
+import encrypt
 
 
 VERBOSE_LEVEL = 5
 
 verbose = 0
+
+DEFAULT_TRANSFER = 1024*1024
 
 
 def check_python():
@@ -270,6 +272,25 @@ def get_config(is_local):
     check_config(config, is_local)
 
     return config
+
+
+def make_config(config, is_local):
+    if is_local:
+        return config
+
+    a_config = config.copy()
+    a_config['email'] = config.get('email', 'test@test.com')
+    a_config['user_pass'] = config.get('user_pass', '123456')
+    a_config['t'] = config.get('t', DEFAULT_TRANSFER)
+    a_config['d'] = config.get('d', 0)
+    a_config['u'] = config.get('u', 0)
+    a_config['enable'] = config.get('enable', 1)
+    a_config['active_date'] = config.get('active_date', 0)
+    a_config['inactive_date'] = config.get('inactive_date', 0)
+    a_config['last_active_date'] = config.get('last_active_date', 0)
+
+    return a_config
+
 
 
 def print_help(is_local):

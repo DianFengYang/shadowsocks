@@ -25,7 +25,7 @@ import signal
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../'))
 from shadowsocks import shell, daemon, eventloop, tcprelay, udprelay, \
-    asyncdns, manager
+    asyncdns, manager, multiuser
 
 
 def main():
@@ -50,8 +50,10 @@ def main():
             config['port_password'][str(server_port)] = config['password']
 
     if config.get('manager_address', 0):
-        logging.info('entering manager mode')
-        manager.run(config)
+        # logging.info('entering manager mode')
+        # manager.run(config)
+        logging.info('entering multiuser manager mode')
+        multiuser.run(config)
         return
 
     tcp_servers = []

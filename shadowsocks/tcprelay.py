@@ -26,8 +26,8 @@ import logging
 import traceback
 import random
 
-from shadowsocks import encrypt, eventloop, shell, common
-from shadowsocks.common import parse_header, onetimeauth_verify, \
+import encrypt, eventloop, shell, common
+from common import parse_header, onetimeauth_verify, \
     onetimeauth_gen, ONETIMEAUTH_BYTES, ONETIMEAUTH_CHUNK_BYTES, \
     ONETIMEAUTH_CHUNK_DATA_LEN, ADDRTYPE_AUTH
 
@@ -157,10 +157,10 @@ class TCPRelayHandler(object):
         logging.debug('chosen server: %s:%d', server, server_port)
         return server, server_port
 
-    def _update_activity(self, data_len=0):
+    def _update_activity(self, data_len=0, up_down='u'):
         # tell the TCP Relay we have activities recently
         # else it will think we are inactive and timed out
-        self._server.update_activity(self, data_len)
+        self._server.update_activity(self, data_len, up_down)
 
     def _update_stream(self, stream, status):
         # update a stream to a new waiting status
@@ -497,7 +497,7 @@ class TCPRelayHandler(object):
         if not data:
             self.destroy()
             return
-        self._update_activity(len(data))
+        self._update_activity(len(data), 'd')
         if not is_local:
             data = self._encryptor.decrypt(data)
             if not data:
@@ -529,7 +529,7 @@ class TCPRelayHandler(object):
         if not data:
             self.destroy()
             return
-        self._update_activity(len(data))
+        self._update_activity(len(data), 'd')
         if self._is_local:
             data = self._encryptor.decrypt(data)
         else:
@@ -547,6 +547,7 @@ class TCPRelayHandler(object):
         # handle local writable event
         if self._data_to_write_to_local:
             data = b''.join(self._data_to_write_to_local)
+            self._update_activity(len(data), 'u')
             self._data_to_write_to_local = []
             self._write_to_sock(data, self._local_sock)
         else:
@@ -557,6 +558,7 @@ class TCPRelayHandler(object):
         self._stage = STAGE_STREAM
         if self._data_to_write_to_remote:
             data = b''.join(self._data_to_write_to_remote)
+            self._update_activity(len(data), 'u')
             self._data_to_write_to_remote = []
             self._write_to_sock(data, self._remote_sock)
         else:
@@ -703,9 +705,9 @@ class TCPRelay(object):
             self._timeouts[index] = None
             del self._handler_to_timeouts[hash(handler)]
 
-    def update_activity(self, handler, data_len):
+    def update_activity(self, handler, data_len, up_down):
         if data_len and self._stat_callback:
-            self._stat_callback(self._listen_port, data_len)
+            self._stat_callback(self._listen_port, data_len, up_down)
 
         # set handler to active
         now = int(time.time())
