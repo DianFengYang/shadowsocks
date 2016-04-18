@@ -25,6 +25,7 @@ class Config_DB(object):
     # redis
     redis_host = '127.0.0.1'
     redis_port = 6379
+    redis_pass = 'shadowsocks'
     redis_dbid = 0
 
     #mongodb
@@ -54,6 +55,7 @@ class Redis_DB(object):
         Redis_DB.pool = redis.ConnectionPool(
             host = Config_DB.redis_host,
             port = Config_DB.redis_port,
+            password = Config_DB.redis_pass,
             db   = Config_DB.redis_dbid
         )
 
