@@ -30,8 +30,6 @@ from multiuserdb import Redis_DB, Mongo_DB, Mysql_DB
 BUF_SIZE = 1506
 STAT_SEND_LIMIT = 50
 
-# we save stat to db every TIMEOUT_PRECISION seconds, larger than eventloop's TIMEOUT_PRECISION
-TIMEOUT_PRECISION = 15
 
 class MultiUser(object):
     def __init__(self, config):
@@ -127,7 +125,7 @@ class MultiUser(object):
                 print('db stop server at port [%s] reason: out bandwidth' % (port))
                 ports_to_remove.append(port)
             last_activity = self.r.get_data(port_activity)
-            if last_activity and now - int(last_activity) < TIMEOUT_PRECISION:
+            if last_activity and now - int(last_activity) <= eventloop.TIMEOUT_PRECISION:
                 print('update port:', port)
                 print({'server_port':port, 'd':stat_d, 'u':stat_u, 'last_activity':last_activity})
                 self.m.update_stat({'server_port':port, 'd':stat_d, 'u':stat_u, 'last_activity':last_activity})
