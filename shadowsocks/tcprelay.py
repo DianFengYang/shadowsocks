@@ -198,6 +198,7 @@ class TCPRelayHandler(object):
         # and update the stream to wait for writing
         if not data or not sock:
             return False
+        self._update_activity(len(data), 'u')
         uncomplete = False
         try:
             l = len(data)
@@ -547,7 +548,6 @@ class TCPRelayHandler(object):
         # handle local writable event
         if self._data_to_write_to_local:
             data = b''.join(self._data_to_write_to_local)
-            self._update_activity(len(data), 'u')
             self._data_to_write_to_local = []
             self._write_to_sock(data, self._local_sock)
         else:
@@ -558,7 +558,6 @@ class TCPRelayHandler(object):
         self._stage = STAGE_STREAM
         if self._data_to_write_to_remote:
             data = b''.join(self._data_to_write_to_remote)
-            self._update_activity(len(data), 'u')
             self._data_to_write_to_remote = []
             self._write_to_sock(data, self._remote_sock)
         else:
