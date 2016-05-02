@@ -23,7 +23,6 @@ import logging
 import json
 import collections
 import os
-import chardet
 
 import common, eventloop, tcprelay, udprelay, asyncdns, shell
 from multiuserdb import Redis_DB, Mongo_DB, Mysql_DB
