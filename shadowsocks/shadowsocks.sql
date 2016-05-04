@@ -14,17 +14,17 @@ DROP TABLE IF EXISTS `user`;
 
 CREATE TABLE `user` (
   `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
-  `email` VARCHAR(32) NOT NULL,
-  `user_pass` VARCHAR(16) NOT NULL,
+  `email` TEXT NOT NULL,
+  `user_pass` TEXT NOT NULL,
   `port` INTEGER(11) NOT NULL,
-  `passwd` VARCHAR(16) NOT NULL,
+  `passwd` TEXT NOT NULL,
   `t` BIGINT(20) NOT NULL DEFAULT 0,
   `d` BIGINT(20) NOT NULL DEFAULT 0,
   `u` BIGINT(20) NOT NULL DEFAULT 0,
   `enable` TINYINT(1) NOT NULL DEFAULT 0,
-  `active_date` INT(11) NOT NULL DEFAULT 0,
-  `inactive_date` INTEGER(11) NOT NULL DEFAULT 0,
-  `last_active_date` INT(11) NOT NULL DEFAULT 0,
+  `effective_date` INTEGER(11) NOT NULL DEFAULT 0,
+  `expire_date` INTEGER(11) NOT NULL DEFAULT 0,
+  `last_active_time` INTEGER(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 );
 
