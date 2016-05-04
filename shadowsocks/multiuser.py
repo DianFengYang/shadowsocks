@@ -73,29 +73,29 @@ class MultiUser(object):
                        eventloop.POLL_IN, self)
         self._loop.add_periodic(self.handle_periodic)
 
-        # port_password = config['port_password']
-        # del config['port_password']
-        # for port, password in port_password.items():
-        #     a_config = config.copy()
-        #     a_config['server_port'] = int(port)
-        #     a_config['password'] = password
-        #     # self.add_port(a_config)
-        #     self.add_user(a_config)
-
         self._stat = self.stat_init(config)
         self.ports_to_remove = []
 
 
-    def stat_init(self, config):
-        ports_info = self.m.get_port_info()
+    def stat_init(self, config, single_port = False):
+        if not single_port:
+            ports_info = self.m.get_port_info()
+        else:
+            ports_info = self.m.get_port_info(config)
         print(ports_info)
         if not ports_info:
             return False
 
+        def trans_to_utf8(s):
+            if isinstance(s, unicode):
+                return s.encode('utf-8') # to utf-8 string
+            else:
+                return s
+
         for row in ports_info:
             a_config = config.copy()
             a_config['server_port'] = row[0] # server_port in config.json will be replace with ports in database,
-            a_config['password'] = common.to_bytes(row[1]) # and password too
+            a_config['password'] = trans_to_utf8(row[1]) # and password too
             a_config['t'] = row[2]
             a_config['d'] = row[3]
             a_config['u'] = row[4]
@@ -127,8 +127,8 @@ class MultiUser(object):
             last_activity = self.r.get_data(port_activity)
             if last_activity and now - int(last_activity) <= eventloop.TIMEOUT_PRECISION:
                 print('update port:', port)
-                print({'server_port':port, 'd':stat_d, 'u':stat_u, 'last_activity':last_activity})
-                self.m.update_stat({'server_port':port, 'd':stat_d, 'u':stat_u, 'last_activity':last_activity})
+                print({'server_port':port, 'd':stat_d, 'u':stat_u, 'last_active_time':last_activity})
+                self.m.update_stat({'server_port':port, 'd':stat_d, 'u':stat_u, 'last_active_time':last_activity})
         return ports_to_remove
 
     # TODO: realize with flask in front end
@@ -202,13 +202,15 @@ class MultiUser(object):
                     logging.error('can not find server_port in config')
                 else:
                     if command == 'add':
-                        aa_config = shell.make_config(a_config, False)
-                        self.add_user(aa_config)
-                        self.add_port(aa_config)
+                        # Todo update config from database
+                        self.stat_init(a_config, True)
+                        # aa_config = shell.make_config(a_config, False)
+                        # # self.add_user(aa_config)
+                        # self.add_port(aa_config)
                         self._send_control_data(b'ok')
                     elif command == 'remove':
                         self.remove_port(a_config)
-                        self.remove_user(a_config)
+                        # self.remove_user(a_config)
                         self._send_control_data(b'ok')
                     elif command == 'ping':
                         self._send_control_data(b'pong')

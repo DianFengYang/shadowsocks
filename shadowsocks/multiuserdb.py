@@ -167,8 +167,8 @@ class Mysql_DB(object):
 
         try:
             with connection.cursor() as cursor:
-                sql = "UPDATE `user` SET `d` = %s, `u` = %s, `last_active_date` = %s WHERE `port` = %s AND `enable` = 1"
-                cursor.execute(sql, (config['d'], config['u'], config['last_activity'], config['server_port']))
+                sql = "UPDATE `user` SET `d` = %s, `u` = %s, `last_active_time` = %s WHERE `port` = %s AND `enable` = 1"
+                cursor.execute(sql, (config['d'], config['u'], config['last_active_time'], config['server_port']))
                 connection.commit()
         except Exception as e:
             logging.error(e)
@@ -177,19 +177,21 @@ class Mysql_DB(object):
 
     def get_port_info(self, config = None):
         connection = self._create_conn()
+        import time
+        now = time.time()
 
         try:
             with connection.cursor() as cursor:
                 # Read a single record
                 if config is None:
-                    sql = "SELECT `port`, `passwd`, `t`, `d`, `u` FROM `user` WHERE `d` + `u` < `t` AND `enable` = 1"
-                    cursor.execute(sql)
+                    sql = "SELECT `port`, `passwd`, `t`, `d`, `u` FROM `user` WHERE `d` + `u` < `t` AND `expire_date` > %s AND `enable` = 1"
+                    cursor.execute(sql, (now))
                     result = cursor.fetchall()
                     return result
                 else:
-                    sql = "SELECT `t`, `d`, `u` FROM `user` WHERE `port` = %s AND `enable` = 1"
-                    cursor.execute(sql, (config['server_port']))
-                    result = cursor.fetchone()
+                    sql = "SELECT `port`, `passwd`, `t`, `d`, `u` FROM `user` WHERE `d` + `u` < `t` AND `port` = %s AND `expire_date` > %s AND `enable` = 1"
+                    cursor.execute(sql, (config['server_port'], now))
+                    result = cursor.fetchall()
                     return result
         except Exception as e:
             logging.error(e)
@@ -208,12 +210,12 @@ class Mysql_DB(object):
                 if not result:
                     logging.error("server port already exists and running at %s:%d" % (config['server'], config['server_port']))
                     sql = "INSERT INTO `user` (`email`, `user_pass`, `port`, `passwd`, `t`, `d`, `u`, `enable`, " \
-                          "`active_date`, `inactive_date`, `last_active_date`) " \
+                          "`effective_date`, `expire_date`, `last_active_time`) " \
                           "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                     cursor.execute(sql, (config['email'], config['user_pass'], config['server_port'],
                                          config['password'], config['t'], config['d'], config['u'],
-                                         config['enable'], config['active_date'], config['inactive_date'],
-                                         config['last_active_date']))
+                                         config['enable'], config['effective_date'], config['expire_date'],
+                                         config['last_active_time']))
                     connection.commit()
                 else:
                     logging.error("server port already exists and running at %s:%d" % (config['server'], config['server_port']))

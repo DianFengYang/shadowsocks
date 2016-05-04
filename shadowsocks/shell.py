@@ -246,7 +246,7 @@ def get_config(is_local):
         config['server'] = to_str(config.get('server', '0.0.0.0'))
         try:
             config['forbidden_ip'] = \
-                IPNetwork(config.get('forbidden_ip', '127.0.0.0/8,::1/128'))
+                IPNetwork(config.get('forbidden_ip', '')) #127.0.0.0/8,::1/128
         except Exception as e:
             logging.error(e)
             sys.exit(2)
@@ -285,9 +285,9 @@ def make_config(config, is_local):
     a_config['d'] = config.get('d', 0)
     a_config['u'] = config.get('u', 0)
     a_config['enable'] = config.get('enable', 1)
-    a_config['active_date'] = config.get('active_date', 0)
-    a_config['inactive_date'] = config.get('inactive_date', 0)
-    a_config['last_active_date'] = config.get('last_active_date', 0)
+    a_config['effective_date'] = config.get('active_date', 0)
+    a_config['expire_date'] = config.get('inactive_date', 0)
+    a_config['last_active_time'] = config.get('last_active_time', 0)
 
     return a_config
 
