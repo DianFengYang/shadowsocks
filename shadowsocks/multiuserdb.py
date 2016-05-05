@@ -184,12 +184,12 @@ class Mysql_DB(object):
             with connection.cursor() as cursor:
                 # Read a single record
                 if config is None:
-                    sql = "SELECT `port`, `passwd`, `t`, `d`, `u` FROM `user` WHERE `d` + `u` < `t` AND `expire_date` > %s AND `enable` = 1"
+                    sql = "SELECT `port`, `passwd`, `t`, `d`, `u`, `expire_date` FROM `user` WHERE `d` + `u` < `t` AND `expire_date` > %s AND `enable` = 1"
                     cursor.execute(sql, (now))
                     result = cursor.fetchall()
                     return result
                 else:
-                    sql = "SELECT `port`, `passwd`, `t`, `d`, `u` FROM `user` WHERE `d` + `u` < `t` AND `port` = %s AND `expire_date` > %s AND `enable` = 1"
+                    sql = "SELECT `port`, `passwd`, `t`, `d`, `u`, `expire_date` FROM `user` WHERE `d` + `u` < `t` AND `port` = %s AND `expire_date` > %s AND `enable` = 1"
                     cursor.execute(sql, (config['server_port'], now))
                     result = cursor.fetchall()
                     return result

@@ -99,6 +99,7 @@ class MultiUser(object):
             a_config['t'] = row[2]
             a_config['d'] = row[3]
             a_config['u'] = row[4]
+            a_config['expire_date'] = row[5]
             self.add_port(a_config)
         return True
 
@@ -120,14 +121,15 @@ class MultiUser(object):
             stat_t = int(self.r.get_data('%s_t' % port))
             stat_d = int(self.r.get_data('%s_d' % port))
             stat_u = int(self.r.get_data('%s_u' % port))
+            expire_date = int(self.r.get_data('%s_expire' % port))
             port_activity = '%s_activity' % port
-            if stat_d + stat_u >= stat_t:
-                print('db stop server at port [%s] reason: out bandwidth' % (port))
+            if stat_d + stat_u >= stat_t or now >= expire_date:
+                logging.warning('stop service on port [%s] for out bandwidth or expire' % (port))
                 ports_to_remove.append(port)
             last_activity = self.r.get_data(port_activity)
             if last_activity and now - int(last_activity) <= eventloop.TIMEOUT_PRECISION:
-                print('update port:', port)
-                print({'server_port':port, 'd':stat_d, 'u':stat_u, 'last_active_time':last_activity})
+                # Todo delete this info in production env
+                logging.info('update port [%s]: d=%s, u=%s, last_active_time=%s' %(port, stat_d, stat_u, last_activity))
                 self.m.update_stat({'server_port':port, 'd':stat_d, 'u':stat_u, 'last_active_time':last_activity})
         return ports_to_remove
 
@@ -154,6 +156,7 @@ class MultiUser(object):
         pipe.set('%s_t' % config['server_port'], config['t'])
         pipe.set('%s_d' % config['server_port'], config['d'])
         pipe.set('%s_u' % config['server_port'], config['u'])
+        pipe.set('%s_expire' % config['server_port'], config['expire_date'])
         pipe.sadd('ports_to_stat', config['server_port'])
         pipe.execute()
 
@@ -181,6 +184,7 @@ class MultiUser(object):
             pipe.delete('%s_t' % config['server_port'])
             pipe.delete('%s_d' % config['server_port'])
             pipe.delete('%s_u' % config['server_port'])
+            pipe.delete('%s_expire' % config['server_port'])
             pipe.srem('ports_to_stat', config['server_port'])
             pipe.execute()
 
