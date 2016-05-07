@@ -274,7 +274,7 @@ class MultiUser(object):
             for port in self.ports_to_remove:
                 a_config = make_config(port)
                 self.remove_port(a_config)
-                self.remove_user(a_config)
+                # self.remove_user(a_config)
                 print('port to remove:', port)
 
     def _send_control_data(self, data):
