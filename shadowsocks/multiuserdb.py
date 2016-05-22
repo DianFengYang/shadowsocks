@@ -16,10 +16,10 @@ from __future__ import absolute_import, division, print_function, \
     with_statement
 
 import redis
-import pymongo
 import pymysql.cursors
 
 import logging
+
 
 class Config_DB(object):
     # redis
@@ -28,17 +28,11 @@ class Config_DB(object):
     redis_pass = 'shadowsocks'
     redis_dbid = 0
 
-    #mongodb
-    mongo_host = '127.0.0.1'
-    mongo_port = 27017
-    mongo_db   = 'shadowsocks'
-
     #mysql
     mysql_host = '127.0.0.1'
     mysql_user = 'ss'
     mysql_pass = 'shadowsocks'
     mysql_db   = 'shadowsocks'
-
 
 
 class Redis_DB(object):
@@ -85,36 +79,6 @@ class Redis_DB(object):
 
     def pipe(self):
         return self._connection.pipeline()
-
-
-class Mongo_DB(object):
-
-    conn = None
-
-    def __init__(self):
-        if Mongo_DB.conn is None:
-            Mongo_DB.create_conn()
-        self._db = Mongo_DB.conn[Config_DB.mongo_db]
-
-    @staticmethod
-    def create_conn():
-        Mongo_DB.conn = pymongo.Connection(
-            Config_DB.mongo_host,
-            Config_DB.mongo_port
-        )
-
-    def get_db(self):
-        return self._db
-
-    def set_data(self, table, key, value):
-        print('update port:', key, 'with value:', value)
-        self._db[table].update({'port': key}, {'$set' : {'current_transfer' : value}})
-
-    def get_data(self, key):
-        return {'8381': 1024*1024*1024, '8382': 10}
-
-    def del_data(self, key):
-        print('delete port:', key, 'from server')
 
 
 class Mysql_DB(object):
