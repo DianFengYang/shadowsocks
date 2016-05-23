@@ -24,8 +24,8 @@ import json
 import collections
 import os
 
-import common, eventloop, tcprelay, udprelay, asyncdns, shell
-from multiuserdb import Redis_DB, Mysql_DB
+from shadowsocks import common, eventloop, tcprelay, udprelay, asyncdns, shell
+from shadowsocks.multiuserdb import Redis_DB, Mysql_DB
 
 BUF_SIZE = 1506
 STAT_SEND_LIMIT = 50

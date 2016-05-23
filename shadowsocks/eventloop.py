@@ -29,7 +29,7 @@ import errno
 import logging
 from collections import defaultdict
 
-import shell
+from shadowsocks import shell
 
 
 __all__ = ['EventLoop', 'POLL_NULL', 'POLL_IN', 'POLL_OUT', 'POLL_ERR',

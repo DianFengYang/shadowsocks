@@ -23,8 +23,8 @@ import json
 import sys
 import getopt
 import logging
-from common import to_bytes, to_str, IPNetwork
-import encrypt
+from shadowsocks.common import to_bytes, to_str, IPNetwork
+from shadowsocks import encrypt
 
 
 VERBOSE_LEVEL = 5

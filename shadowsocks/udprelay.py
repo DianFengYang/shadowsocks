@@ -68,8 +68,8 @@ import struct
 import errno
 import random
 
-import encrypt, eventloop, lru_cache, common, shell
-from common import parse_header, pack_addr, onetimeauth_verify, \
+from shadowsocks import encrypt, eventloop, lru_cache, common, shell
+from shadowsocks.common import parse_header, pack_addr, onetimeauth_verify, \
     onetimeauth_gen, ONETIMEAUTH_BYTES, ADDRTYPE_AUTH
 
 

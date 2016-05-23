@@ -25,7 +25,7 @@ import logging
 import json
 import collections
 
-import common, eventloop, tcprelay, udprelay, asyncdns, shell, multiuser
+from shadowsocks import common, eventloop, tcprelay, udprelay, asyncdns, shell, multiuser
 
 
 BUF_SIZE = 1506
